@@ -54,16 +54,57 @@ def simulate_lru(k, req):
 
     return misses
 
+def precompute_next_use(req):
+    next_use = [INF] * len(req)
+    next_pos = {}
+
+    for i in range(len(req) - 1, -1, -1):
+        x = req[i]
+        next_use[i] = next_pos.get(x, INF)
+        next_pos[x] = i
+
+    return next_use
+
+
+def simulate_optff(k, req):
+    next_use = precompute_next_use(req)
+
+    in_cache = set()
+    item_next = {}
+    misses = 0
+
+    for i in range(len(req)):
+        x = req[i]
+
+        if x in in_cache:
+            item_next[x] = next_use[i]
+            continue
+
+        misses += 1
+
+        if len(in_cache) < k:
+            in_cache.add(x)
+            item_next[x] = next_use[i]
+        else:
+            victim = max(in_cache, key=lambda y: item_next[y])
+            in_cache.remove(victim)
+            del item_next[victim]
+
+            in_cache.add(x)
+            item_next[x] = next_use[i]
+
+    return misses
 
 def main():
     k, m, req = read_stdin()
 
     fifo = simulate_fifo(k, req)
     lru = simulate_lru(k, req)
+    opt = simulate_optff(k, req)
 
     print("FIFO  :", fifo)
     print("LRU   :", lru)
-    
+    print("OPTFF :", opt)
 
 
 if __name__ == "__main__":
