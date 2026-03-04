@@ -39,16 +39,30 @@ def simulate_fifo(k, req):
 
     return misses
 
+def simulate_lru(k, req):
+    cache = OrderedDict()
+    misses = 0
 
+    for x in req:
+        if x in cache:
+            cache.move_to_end(x)  # hit -> most recent
+        else:
+            misses += 1
+            if len(cache) == k:
+                cache.popitem(last=False)  # evict least recent
+            cache[x] = True
+
+    return misses
 
 
 def main():
     k, m, req = read_stdin()
 
     fifo = simulate_fifo(k, req)
-    
+    lru = simulate_lru(k, req)
 
     print("FIFO  :", fifo)
+    print("LRU   :", lru)
     
 
 
